@@ -1,0 +1,14 @@
+## Naming variables
+- Choose varialbe names that tell you why it exists, what it does, and how it is used. Should not require a comment.
+- Avoid disinformation; e.g. calling a variable `accountList` when it's not a `List`
+- Avoid naming variables too similar to each other
+- Avoid noise words like `Object`, `String`, e.g. `Customer` vs `CustomerObject` - what distinguishes these two? Another example: `getActiveAccount()` vs. `getActiveAccountInfo()` vs. `getActiveAccountData()`
+- Distinguish names in a way that readers know what the differences mean
+- Single letter and numeric constants are hard to locate. It might be worth making a constant, e.g. `MAX_CLASSES_PER_STUDENT=7` and use single-letter names ONLY as local variables inside short methods
+- Don't use prefixes, since functions and classes be small enough you don't need them
+- Class names should be nouns instead of verbs. Avoid words like `Manager` `Processor` `Data` `Info` in the name of a class
+- Method names should be verbs like `postPayment` `deletePage` `save`
+- Pick one word for concept; pick one of `fetch`, `retrieve`, `get` as equivalent methods of different classes. Pick one of `controller`, `manager`, `driver` in the same code base
+- Sometimes it's important to provide context, but only when needed for the right scope.
+	- `firstName, lastName, street, houseNumber, city, state, zipCode` together makes sense that it's referring to an address. But `state` by itself would be confusing.
+	- Change to `addrFirstName, addrLastName, addrState` etc.
