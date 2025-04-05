@@ -21,3 +21,69 @@
 <b>Database Replication</b>
 1. Master database only support write operations (and insert, delete, update -- any data-modifying commands)
 2. Usually more reads than writes, which means more slaves than masters.
+
+<b>Advantages:</b>
+- Better performance. All writes and updates happen in master nodes, and read operations are distributed across slave nodes. More queries are processed in parallel.
+- Reliability: Data is replicated across multiple locations so data is preserved if something happens
+- High availability: Website remains operational since you can access data in different locations
+
+<b>What if database goes offline?</b>
+- If one slave database is available and goes offline, read operations directed to the master db temporarily, and new slave db will replace the old one
+- If multiple slave databases are available, read operations are redirected to other healthy slave databases
+- If master database goes offline, a slave database gets promoted temporarily
+
+<b>The new design (everything put together)</b>
+1. User gets the IP address of the load balancer from DNS
+2. User connects to the load balancer with this IP address
+3. The HTTP request is routed to Server 1 or Server 2 (however many servers are available)
+4. Web server reads user data from a slave database
+5. Server routes any data-modifying operations to the master database
+
+<b>Cache</b>
+- Cache is a temporary data store layer, faster than a database
+- Offers better system performance, ability to reduce database workloads, and the ability to scale the cache tier independently 
+- Read-through cache: strategy for after receiving a request, server checks if cache has available response. If so, it sends data back to client. Else, it queries the database, stores the response in cache, and sends it back to clientl
+- Most cache servers like Memcache provide APIs for common programming languages
+`cache.set('key', 'value', 36000 * SECONDS)`
+`cache.get('key')`
+
+- When to use a cache:
+    - When data is read frequently but modified infrequently. Cached data is stored in volatile memory, so important data should be saved in persistent data stores.
+- Expiration policy:
+    - Good practice to implement. Once cached data is expired, remove it from the cache. 
+        - Without this policy, cached data would be stored in memory permanently. 
+        - Too short expiration date as this will cause the system to reload data from the database too frequently. 
+        - Ttoo long expiration date will make data become stale.
+- Consistency:
+    - Keep the data store and the cache in sync
+    - Inconsistencies occur because data-modifying operationso n the data store and cache are not a single transaction 
+- Distributed caching:
+    - Single cache server could potentially be a single point of failure (could cause the whole system to stop working if itself fails)
+    - Multiple cache servers across data centers are recommended
+- Eviction policy:
+    - If cache full, adding to cache means removing something first
+    - LRU (Least Recently Used) - most popular
+    - FIFO (First in First Out)
+
+<b>Content Delivery Network (CDN)</b>
+- CDN = network of geographically dispersed servers used to deliver static content like images, videos, Javascript files, etc.
+- When a user visits website, CDN server closest to user will deliver static content
+    - The further user is from CDN servers, the slower the website loads
+
+Example: User tries to fetch image using URL
+1. If CDN server does not have image in cache, it will request file from the origin (like a web server or online storage such as Amazon S3)
+2. The origin returns image to CDN server, which includes optional HTTP header Time-to-Live (TTL) describing how long the image should be cached
+3. CDN caches the image and returns it to User 
+
+Considerations:
+- Cost: CDNs are run by third-party providers and you are charged for data transfers. You should remove infrequently used assets from CDN
+- Setting appropriate cache expiry
+- CDN fallback: in the case of CDN failure, clients should be able to detect the problem and request resources from origin instead
+
+After CDN:
+1. Static assets are no longer servered by web servers, instead, they are fetched from CDN for better performance
+2. The database load is lightened by caching data.
+
+<b>Stateless Web Tier</b>
+- In a stateful server, for every user, they would need to be routed to the same server in order for the user's session to be remembered (e.g. authentication). This makes it challenging to handle servers, in the case we want to add/remove them or they fail
+- Stateless architecture requires all the servers sharing a shared data store dedicated to state/session data
