@@ -87,3 +87,42 @@ After CDN:
 <b>Stateless Web Tier</b>
 - In a stateful server, for every user, they would need to be routed to the same server in order for the user's session to be remembered (e.g. authentication). This makes it challenging to handle servers, in the case we want to add/remove them or they fail
 - Stateless architecture requires all the servers sharing a shared data store dedicated to state/session data
+
+<b>Data Centers</b>
+- geoDNS is a DNS service that allows domain names to be resolved to IP addresses based on location of user
+- If data center outage, direct traffic to healthy data center
+
+<b>Messaging Queue</b>
+- Durable component stored in memory that supports asynchronous communication
+- Serves as a buffer and distributes asyncrhonous requests
+- Producer and consumer can be scaled independently
+    - Large queue -> add more workers
+    - Small queue -> reduce workers
+
+<b>Database scaling</b>
+- Sharding: separate databases into smaller, more easily managed parts called shards
+    - Each shard shares the same schema, but data unique to the shard
+    - Anytime you access data, hash function is used to find corresponding shard
+- Why?
+    - Reads can happen in parallel
+    - Reduce load on a single database
+    - Less entries per shard, lookups are faster
+- Shard key: used to decide which shard a particular piece of data belongs to. When data is written to the database, the sharding key value for that data is used to determine which shard it should be stored in. 
+- Choosing a shard key:
+    - The shard key should be static and not change frequently. 
+    - The shard key should be unique or have a high degree of uniqueness. 
+    - The shard key should be chosen based on how the data is queried. 
+    - The shard key should be a single field or a combination of fields. 
+- Resharding needed when 1. a single shard can't take more data 2. certain shards experience shard exhaustion faster than others due to uneven distribution
+- Celebrity / hotspot key problem: excessive access to specific shard can cause server overload. For example, if all celebrities were in one shard, then there would be a lot of reads there. Might want to allocate shard per celebrity.
+- Hard to do join operations on a database that is sharded across mlutiple servers. Denormalizing is the workaround.
+
+<b>Summary</b>
+1. Keep web tier stateless
+2. Build redundancy at every tier
+3. Cache data 
+4. Support multiple data centers
+5. Host static assets in CDN
+6. Scale data tier by sharding
+7. Split tiers into individual services
+8. Monitor your system nand use automation tools
